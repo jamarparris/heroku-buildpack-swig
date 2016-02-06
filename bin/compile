@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+set -e
+
+set -o errexit    # always exit on error
+set -o pipefail   # don't ignore exit codes when piping output
+set -o nounset    # fail on unset variables
+unset GIT_DIR     # Avoid GIT_DIR leak from previous build steps
+
+BUILD_DIR=${1:-}
+CACHE_DIR=${2:-}
+ENV_DIR=${3:-}
+BP_DIR=$(cd $(dirname ${0:-}); cd ..; pwd)
+
+mkdir -p "$BUILD_DIR/.jp_vendor/"
+
+cd $BUILD_DIR
+
+# Install SWIG
+echo "-----> Fetching and installing SWIG 2"
+curl https://jamarparris.s3.amazonaws.com/vendor_binaries/swig-2.0.5/swig.tar.gz --output /tmp/swig.tar.gz
+
+echo "SWIG downloaded"
+
+echo "-----> Installing ..."
+tar xzf /tmp/swig.tar.gz -C /tmp
+
+rm -rf "$BUILD_DIR/.jp_vendor/swig"
+
+mv /tmp/swig "$BUILD_DIR/.jp_vendor"
+
+export PATH="$BUILD_DIR/.jp_vendor/swig/bin":$PATH
+export SWIG_LIB="$BUILD_DIR/.jp_vendor/swig/share/swig/2.0.5"
+
+echo "export PATH=$PATH" > $BP_DIR/export
+echo "export SWIG_LIB=$SWIG_LIB" >> $BP_DIR/export
+echo 'export SWIG_FEATURES="-I/usr/include/openssl"' >> $BP_DIR/export
+
+# echo "$BP_DIR"
+
+cat $BP_DIR/export
+which swig
+
+echo "SWIG installed"
+
+# # End Install SWIG

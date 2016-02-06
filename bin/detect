@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+echo "Vendor Binaries: swig"
+exit 0
